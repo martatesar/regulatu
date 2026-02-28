@@ -10,6 +10,7 @@ export interface Protocol {
   state: FeltState;
   label: string;
   questionLabel: string;
+  shortLabel: string;
   image: any;
   inhaleSec: number;
   holdAfterInhaleSec?: number;
@@ -25,6 +26,7 @@ export const PROTOCOLS: Record<FeltState, Protocol> = {
     state: "heart_racing",
     label: "4-7-8 Relaxing",
     questionLabel: "I feel anxious or keyed up",
+    shortLabel: "Anxious",
     image: require("../assets/images/icon_heart.jpg"),
     inhaleSec: 4.0,
     holdAfterInhaleSec: 7.0,
@@ -36,6 +38,7 @@ export const PROTOCOLS: Record<FeltState, Protocol> = {
     state: "chest_tight",
     label: "Box Breathing",
     questionLabel: "I feel tense",
+    shortLabel: "Tense",
     image: require("../assets/images/icon_chest.jpg"),
     inhaleSec: 4.0,
     holdAfterInhaleSec: 4.0,
@@ -48,6 +51,7 @@ export const PROTOCOLS: Record<FeltState, Protocol> = {
     state: "mind_looping",
     label: "Box Focus",
     questionLabel: "My thoughts won't slow down",
+    shortLabel: "Racing thoughts",
     image: require("../assets/images/icon_mind.jpg"),
     inhaleSec: 4.0,
     holdAfterInhaleSec: 4.0,
@@ -61,6 +65,7 @@ export const PROTOCOLS: Record<FeltState, Protocol> = {
     state: "too_much_input",
     label: "Extended Exhale",
     questionLabel: "Everything feels like too much",
+    shortLabel: "Overwhelmed",
     image: require("../assets/images/icon_overwhelmed.jpg"),
     inhaleSec: 4.0,
     exhaleSec: 6.0,
@@ -71,6 +76,7 @@ export const PROTOCOLS: Record<FeltState, Protocol> = {
     state: "frozen_numb",
     label: "Coherent Breathing",
     questionLabel: "I feel frozen or numb",
+    shortLabel: "Frozen or numb",
     image: require("../assets/images/icon_frozen.jpg"),
     inhaleSec: 6.0,
     exhaleSec: 6.0,
@@ -81,6 +87,7 @@ export const PROTOCOLS: Record<FeltState, Protocol> = {
     state: "restless_focus",
     label: "Resonant Frequency",
     questionLabel: "I feel restless and unfocused",
+    shortLabel: "Restless",
     image: require("../assets/images/icon_restless.jpg"),
     inhaleSec: 5.5,
     exhaleSec: 5.5,

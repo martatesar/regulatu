@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { colors } from "../theme/colors";
 import { typography } from "../theme/typography";
@@ -29,30 +30,35 @@ export const SessionEndScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={[typography.h1, styles.title]}>Session complete</Text>
+    <LinearGradient colors={["#12101F", "#030303"]} style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.content}>
+          <Text style={[typography.h1, styles.title]}>Session complete</Text>
 
-        <TouchableOpacity style={styles.buttonPrimary} onPress={handleContinue}>
-          <Text style={typography.buttonLarge}>Continue</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.buttonPrimary} onPress={handleContinue}>
+            <Text style={typography.buttonLarge}>Continue</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.buttonSecondary} onPress={handleStop}>
-          <Text
-            style={[typography.buttonLarge, { color: colors.textSecondary }]}
-          >
-            Stop
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+          <TouchableOpacity style={styles.buttonSecondary} onPress={handleStop}>
+            <Text
+              style={[typography.buttonLarge, { color: colors.textSecondary }]}
+            >
+              Stop
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    justifyContent: "center",
+  },
+  safeArea: {
+    flex: 1,
     justifyContent: "center",
   },
   content: {

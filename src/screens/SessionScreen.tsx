@@ -11,6 +11,7 @@ import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { colors } from "../theme/colors";
 import { PROTOCOLS, Protocol } from "../engine/protocols";
@@ -226,68 +227,72 @@ export const SessionScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleClose} style={styles.iconButton}>
-          <Feather name="x" size={24} color={colors.textSecondary} />
-        </TouchableOpacity>
+    <LinearGradient colors={["#12101F", "#030303"]} style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={handleClose} style={styles.iconButton}>
+            <Feather name="x" size={24} color="#8A8A9E" />
+          </TouchableOpacity>
 
-        <View style={styles.durationContainer}>
-          {protocol.durationOptionsSec.map((d) => (
-            <TouchableOpacity
-              key={d}
-              onPress={() => handleDurationChange(d)}
-              style={[
-                styles.durationPill,
-                d === durationTotalRef.current && styles.durationPillActive,
-              ]}
-            >
-              <Text
+          <View style={styles.durationContainer}>
+            {protocol.durationOptionsSec.map((d) => (
+              <TouchableOpacity
+                key={d}
+                onPress={() => handleDurationChange(d)}
                 style={[
-                  styles.durationText,
-                  d === durationTotalRef.current && styles.durationTextActive,
+                  styles.durationPill,
+                  d === durationTotalRef.current && styles.durationPillActive,
                 ]}
               >
-                {d}s
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    styles.durationText,
+                    d === durationTotalRef.current && styles.durationTextActive,
+                  ]}
+                >
+                  {d}s
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <View style={{ width: 40 }} />
         </View>
 
-        <View style={{ width: 40 }} />
-      </View>
+        <View style={styles.center}>
+          <BreathingCircle
+            phase={phase}
+            durationSec={
+              phase === "inhale"
+                ? currentInhaleRef.current
+                : phase === "exhale"
+                  ? currentExhaleRef.current
+                  : phase === "hold-inhale"
+                    ? currentHoldInhaleRef.current
+                    : currentHoldExhaleRef.current
+            }
+            isActive={isActive}
+            nextPhase={getNextVisiblePhase(phase)}
+            progress={phaseProgress}
+          />
+        </View>
 
-      <View style={styles.center}>
-        <BreathingCircle
-          phase={phase}
-          durationSec={
-            phase === "inhale"
-              ? currentInhaleRef.current
-              : phase === "exhale"
-                ? currentExhaleRef.current
-                : phase === "hold-inhale"
-                  ? currentHoldInhaleRef.current
-                  : currentHoldExhaleRef.current
-          }
-          isActive={isActive}
-          nextPhase={getNextVisiblePhase(phase)}
-          progress={phaseProgress}
+        <AdaptiveOverlay
+          visible={overlayVisible}
+          onStillIntense={() => handleCheckpoint("intense")}
+          onThisHelps={() => handleCheckpoint("help")}
         />
-      </View>
-
-      <AdaptiveOverlay
-        visible={overlayVisible}
-        onStillIntense={() => handleCheckpoint("intense")}
-        onThisHelps={() => handleCheckpoint("help")}
-      />
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
     flexDirection: "row",
@@ -306,24 +311,26 @@ const styles = StyleSheet.create({
   },
   durationContainer: {
     flexDirection: "row",
-    backgroundColor: "#333",
-    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 24,
     padding: 4,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   durationPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
   durationPillActive: {
-    backgroundColor: "#555",
+    backgroundColor: "rgba(255,255,255,0.15)",
   },
   durationText: {
-    color: "#888",
-    fontSize: 12,
+    color: "#8A8A9E",
+    fontSize: 14,
     fontWeight: "600",
   },
   durationTextActive: {
-    color: "#fff",
+    color: "#FFFFFF",
   },
 });

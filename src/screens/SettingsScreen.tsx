@@ -3,6 +3,7 @@ import { View, Text, Switch, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { colors } from "../theme/colors";
 import { typography } from "../theme/typography";
@@ -13,35 +14,39 @@ export const SettingsScreen = () => {
   const { hapticsEnabled, setHapticsEnabled } = useSettingsStore();
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={typography.h1}>Settings</Text>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.closeButton}
-        >
-          <Feather name="x" size={24} color={colors.text} />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.content}>
-        <View style={styles.row}>
-          <Text style={typography.h2}>Haptics</Text>
-          <Switch
-            value={hapticsEnabled}
-            onValueChange={setHapticsEnabled}
-            trackColor={{ false: "#333", true: colors.primary }}
-          />
+    <LinearGradient colors={["#12101F", "#030303"]} style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <Text style={typography.h1}>Settings</Text>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.closeButton}
+          >
+            <Feather name="x" size={24} color={colors.text} />
+          </TouchableOpacity>
         </View>
-      </View>
-    </SafeAreaView>
+
+        <View style={styles.content}>
+          <View style={styles.row}>
+            <Text style={typography.h2}>Haptics</Text>
+            <Switch
+              value={hapticsEnabled}
+              onValueChange={setHapticsEnabled}
+              trackColor={{ false: "#333", true: colors.primary }}
+            />
+          </View>
+        </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
     flexDirection: "row",

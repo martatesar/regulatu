@@ -294,9 +294,9 @@ const CenterOrb: React.FC<CenterOrbProps> = ({ breath, phase, nextPhase, progres
       <Svg width={ORB_SIZE} height={ORB_SIZE} viewBox="0 0 100 100">
         <Defs>
           <RadialGradient id="orbGrad" cx="50%" cy="50%" r="50%">
-            <Stop offset="0%" stopColor="#1A1A1A" stopOpacity={1} />
-            <Stop offset="80%" stopColor="#1A1A1A" stopOpacity={1} />
-            <Stop offset="95%" stopColor="#333333" stopOpacity={0.8} />
+            <Stop offset="0%" stopColor="#161622" stopOpacity={1} />
+            <Stop offset="80%" stopColor="#161622" stopOpacity={1} />
+            <Stop offset="95%" stopColor="#2A2A38" stopOpacity={0.8} />
             <Stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.15} />
           </RadialGradient>
         </Defs>
