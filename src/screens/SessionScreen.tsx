@@ -12,8 +12,6 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import * as Speech from "expo-speech";
-
 import { colors } from "../theme/colors";
 import { PROTOCOLS, Protocol } from "../engine/protocols";
 import { RootStackParamList } from "../app/navigation";
@@ -37,7 +35,7 @@ export const SessionScreen = () => {
   const { state: feltState, durationSec: paramDuration } = route.params;
   const protocol = PROTOCOLS[feltState];
 
-  const { hapticsEnabled, voiceCuesEnabled } = useSettingsStore();
+  const { hapticsEnabled } = useSettingsStore();
 
   // Session State
   const [phase, setPhase] = useState<Phase>("inhale");
@@ -64,7 +62,6 @@ export const SessionScreen = () => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
-      Speech.stop();
     };
   }, []);
 
@@ -77,7 +74,6 @@ export const SessionScreen = () => {
       } else {
         setIsActive(false);
         if (timerRef.current) clearTimeout(timerRef.current);
-        Speech.stop();
       }
     });
 
@@ -97,13 +93,11 @@ export const SessionScreen = () => {
       if (!isActive) return;
 
       let duration = 0;
-      let cueText = "";
 
-      // Determine Duration & Cue
+      // Determine Duration
       switch (newPhase) {
         case "inhale":
           duration = currentInhaleRef.current;
-          cueText = "Inhale";
           if (protocol.microVariation?.enabled) {
             const delta = protocol.microVariation.deltaSec;
             const r = Math.random();
@@ -114,18 +108,15 @@ export const SessionScreen = () => {
           break;
         case "hold-inhale":
           duration = currentHoldInhaleRef.current;
-          cueText = "Hold";
           break;
         case "exhale":
           duration = currentExhaleRef.current;
-          cueText = "Exhale";
           if ((runPhase as any).nextExhaleVariation !== undefined) {
             duration += (runPhase as any).nextExhaleVariation;
           }
           break;
         case "hold-exhale":
           duration = currentHoldExhaleRef.current;
-          cueText = "Hold";
           break;
       }
 
@@ -138,14 +129,6 @@ export const SessionScreen = () => {
       }
 
       setPhase(newPhase);
-
-      // Outputs
-      if (voiceCuesEnabled && cueText) {
-        Speech.speak(cueText, {
-          rate: 0.9,
-          pitch: 1.0,
-        });
-      }
 
       if (hapticsEnabled) {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -170,7 +153,7 @@ export const SessionScreen = () => {
         finishPhase(newPhase, duration);
       }, ms);
     },
-    [isActive, hapticsEnabled, voiceCuesEnabled, protocol],
+    [isActive, hapticsEnabled, protocol],
   );
 
   const getNextPhase = (current: Phase): Phase => {

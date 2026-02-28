@@ -59,6 +59,11 @@ export const HomeScreen = () => {
             </TouchableOpacity>
           ))}
         </View>
+
+        <Text style={styles.disclaimer}>
+          For wellness support only. Not medical advice.{"\n"}If you may be
+          having a medical emergency, contact local emergency services.
+        </Text>
       </View>
     </SafeAreaView>
   );
@@ -107,7 +112,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 18,
+    paddingVertical: 14,
     paddingHorizontal: 16,
     backgroundColor: "#121212",
   },
@@ -116,20 +121,28 @@ const styles = StyleSheet.create({
     borderBottomColor: "#252525",
   },
   icon: {
-    width: 50,
-    height: 50,
+    width: 64,
+    height: 64,
     marginRight: 16,
-    borderRadius: 8,
-    resizeMode: "contain",
+    borderRadius: 12,
+    resizeMode: "cover",
   },
   textContainer: {
     flex: 1,
     justifyContent: "center",
   },
   label: {
-    fontSize: 17,
-    color: "#E0E0E0",
-    fontWeight: "400",
-    lineHeight: 22,
+    fontSize: 18,
+    color: "#F0F0F0",
+    fontWeight: "500",
+    lineHeight: 24,
+    letterSpacing: 0.2,
+  },
+  disclaimer: {
+    marginTop: 16,
+    textAlign: "center",
+    fontSize: 12,
+    color: "#666666",
+    lineHeight: 18,
   },
 });

@@ -10,15 +10,7 @@ import { useSettingsStore } from "../store/settingsStore";
 
 export const SettingsScreen = () => {
   const navigation = useNavigation();
-  const {
-    ocdSafeMode,
-    setOcdSafeMode,
-    hapticsEnabled,
-    setHapticsEnabled,
-    voiceCuesEnabled,
-    setVoiceCuesEnabled,
-    darkMode,
-  } = useSettingsStore();
+  const { hapticsEnabled, setHapticsEnabled } = useSettingsStore();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -34,45 +26,11 @@ export const SettingsScreen = () => {
 
       <View style={styles.content}>
         <View style={styles.row}>
-          <View style={styles.textContainer}>
-            <Text style={typography.h2}>OCD-safe mode</Text>
-            <Text style={typography.body}>
-              Removes all emotional/reassurance language.
-            </Text>
-          </View>
-          <Switch
-            value={ocdSafeMode}
-            onValueChange={setOcdSafeMode}
-            trackColor={{ false: "#333", true: colors.primary }}
-          />
-        </View>
-
-        <View style={styles.row}>
           <Text style={typography.h2}>Haptics</Text>
           <Switch
             value={hapticsEnabled}
             onValueChange={setHapticsEnabled}
             trackColor={{ false: "#333", true: colors.primary }}
-          />
-        </View>
-
-        <View style={styles.row}>
-          <Text style={typography.h2}>Voice cues</Text>
-          <Switch
-            value={voiceCuesEnabled}
-            onValueChange={setVoiceCuesEnabled}
-            trackColor={{ false: "#333", true: colors.primary }}
-          />
-        </View>
-
-        {/* Dark Mode is always ON in MVP as per spec, but showing it as status */}
-        <View style={styles.row}>
-          <Text style={[typography.h2, { opacity: 0.5 }]}>Dark Mode</Text>
-          <Switch
-            value={true}
-            disabled={true} // Forced ON
-            trackColor={{ false: "#333", true: "#333" }}
-            thumbColor={colors.secondary}
           />
         </View>
       </View>
@@ -106,9 +64,5 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     borderBottomWidth: 1,
     borderBottomColor: "#222",
-  },
-  textContainer: {
-    flex: 1,
-    paddingRight: 10,
   },
 });

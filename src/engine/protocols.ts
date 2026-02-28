@@ -24,7 +24,7 @@ export const PROTOCOLS: Record<FeltState, Protocol> = {
   heart_racing: {
     state: "heart_racing",
     label: "4-7-8 Relaxing",
-    questionLabel: "My heart is racing",
+    questionLabel: "I feel anxious or keyed up",
     image: require("../assets/images/icon_heart.jpg"),
     inhaleSec: 4.0,
     holdAfterInhaleSec: 7.0,
@@ -35,7 +35,7 @@ export const PROTOCOLS: Record<FeltState, Protocol> = {
   chest_tight: {
     state: "chest_tight",
     label: "Box Breathing",
-    questionLabel: "My chest feels tight",
+    questionLabel: "I feel tense",
     image: require("../assets/images/icon_chest.jpg"),
     inhaleSec: 4.0,
     holdAfterInhaleSec: 4.0,
