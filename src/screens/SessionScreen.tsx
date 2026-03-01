@@ -250,7 +250,7 @@ export const SessionScreen = () => {
                     d === durationTotalRef.current && styles.durationTextActive,
                   ]}
                 >
-                  {d}s
+                  {d >= 60 && d % 60 === 0 ? `${d / 60}m` : `${d}s`}
                 </Text>
               </TouchableOpacity>
             ))}

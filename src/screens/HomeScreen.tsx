@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Dimensions } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Dimensions, Modal } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,7 +16,7 @@ import Animated, {
 
 import { colors } from "../theme/colors";
 import { typography } from "../theme/typography";
-import { PROTOCOLS, FeltState } from "../engine/protocols";
+import { PROTOCOLS, FeltState, Protocol } from "../engine/protocols";
 import { RootStackParamList } from "../app/navigation";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
@@ -69,6 +69,8 @@ export const HomeScreen = () => {
   // High refresh rate sensor (60Hz = ~16ms)
   const gravitySensor = useAnimatedSensor(SensorType.GRAVITY, { interval: 16 });
 
+  const [selectedInfo, setSelectedInfo] = useState<Protocol | null>(null);
+
   const handleStateSelect = (state: FeltState) => {
     navigation.navigate("Session", { state });
   };
@@ -114,6 +116,12 @@ export const HomeScreen = () => {
                     <View style={styles.textContainer}>
                       <Text style={styles.label}>{protocol.shortLabel}</Text>
                     </View>
+                    <TouchableOpacity
+                      style={styles.infoButton}
+                      onPress={() => setSelectedInfo(protocol)}
+                    >
+                      <Feather name="info" size={24} color="#8A8A9E" />
+                    </TouchableOpacity>
                     <Feather name="chevron-right" size={24} color="#555566" />
                   </View>
                 </LinearGradient>
@@ -127,6 +135,42 @@ export const HomeScreen = () => {
           </Text>
         </ScrollView>
       </SafeAreaView>
+
+      <Modal
+        visible={!!selectedInfo}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSelectedInfo(null)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setSelectedInfo(null)}
+        >
+          <TouchableOpacity activeOpacity={1} style={styles.modalContentWrapper}>
+            <LinearGradient
+              colors={["#2A2A40", "#141424"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={styles.modalContent}
+            >
+              <AnimatedHighlight sensor={gravitySensor.sensor} />
+              <View style={styles.modalHeader}>
+                <View style={styles.modalTitleContainer}>
+                  <Feather name="info" size={20} color="#6B6B8A" style={styles.modalTitleIcon} />
+                  <Text style={styles.modalTitle}>{selectedInfo?.label}</Text>
+                </View>
+                <TouchableOpacity onPress={() => setSelectedInfo(null)} style={styles.closeButton}>
+                  <Feather name="x" size={24} color="#8A8A9E" />
+                </TouchableOpacity>
+              </View>
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalScrollContent}>
+                <Text style={styles.modalDescription}>{selectedInfo?.explanation}</Text>
+              </ScrollView>
+            </LinearGradient>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </LinearGradient>
   );
 };
@@ -220,5 +264,66 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#4A4A5E",
     lineHeight: 18,
+  },
+  infoButton: {
+    padding: 8,
+    marginLeft: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.75)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  modalContentWrapper: {
+    width: "100%",
+    maxHeight: "80%",
+    borderRadius: 24,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+    elevation: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+  },
+  modalContent: {
+    width: "100%",
+    padding: 24,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  modalTitleIcon: {
+    marginRight: 8,
+  },
+  modalTitle: {
+    fontSize: 22,
+    color: "#FFFFFF",
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
+  closeButton: {
+    padding: 4,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderRadius: 20,
+  },
+  modalScrollContent: {
+    paddingBottom: 8,
+  },
+  modalDescription: {
+    fontSize: 16,
+    color: "#D0D0E0",
+    lineHeight: 26,
+    fontWeight: "400",
   },
 });
