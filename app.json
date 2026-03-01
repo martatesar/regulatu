@@ -25,6 +25,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0d501ee4-46fb-4439-bb7a-8c1d6a5693a0"
+      }
+    },
+    "owner": "martatesar"
   }
 }
