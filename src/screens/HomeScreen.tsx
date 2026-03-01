@@ -1,10 +1,18 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Dimensions } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import Animated, {
+  useAnimatedSensor,
+  SensorType,
+  useAnimatedStyle,
+  interpolate,
+  Extrapolation,
+  SharedValue
+} from "react-native-reanimated";
 
 import { colors } from "../theme/colors";
 import { typography } from "../theme/typography";
@@ -16,8 +24,50 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
   "Home"
 >;
 
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// Subcomponent to handle the gyro-based animated highlight
+const AnimatedHighlight = ({ sensor }: { sensor: any }) => {
+  const animatedStyle = useAnimatedStyle(() => {
+    // When tilted right (right side down), x is positive, so we want the highlight to move left (negative X).
+    // When tilted left (left side down), x is negative, highlight moves right.
+    const maxTranslate = SCREEN_WIDTH * 0.4;
+    const translateX = interpolate(
+      sensor.value.x,
+      [-5, 5], // roughly half of gravity's max pull for high sensitivity
+      [maxTranslate, -maxTranslate],
+      Extrapolation.CLAMP
+    );
+
+    return {
+      transform: [{ translateX }],
+    };
+  });
+
+  return (
+    <Animated.View style={[styles.topHighlightWrapper, animatedStyle]}>
+      <LinearGradient
+        colors={[
+          "rgba(255, 255, 255, 0)",
+          "rgba(255, 255, 255, 0.1)",
+          "rgba(200, 220, 255, 0.9)",
+          "rgba(255, 255, 255, 0.1)",
+          "rgba(255, 255, 255, 0)",
+        ]}
+        locations={[0, 0.3, 0.5, 0.7, 1]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.topHighlight}
+      />
+    </Animated.View>
+  );
+};
+
 export const HomeScreen = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  
+  // High refresh rate sensor (60Hz = ~16ms)
+  const gravitySensor = useAnimatedSensor(SensorType.GRAVITY, { interval: 16 });
 
   const handleStateSelect = (state: FeltState) => {
     navigation.navigate("Session", { state });
@@ -57,20 +107,8 @@ export const HomeScreen = () => {
                   end={{ x: 0, y: 1 }}
                   style={styles.cardGradient}
                 >
-                  {/* Top center glow highlight */}
-                  <LinearGradient
-                    colors={[
-                      "rgba(255, 255, 255, 0)",
-                      "rgba(255, 255, 255, 0.1)",
-                      "rgba(200, 220, 255, 0.9)",
-                      "rgba(255, 255, 255, 0.1)",
-                      "rgba(255, 255, 255, 0)",
-                    ]}
-                    locations={[0, 0.2, 0.5, 0.8, 1]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.topHighlight}
-                  />
+                  <AnimatedHighlight sensor={gravitySensor.sensor} />
+                  
                   <View style={styles.cardContent}>
                     <Image source={protocol.image} style={styles.icon} />
                     <View style={styles.textContainer}>
@@ -143,12 +181,17 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
   },
-  topHighlight: {
+  topHighlightWrapper: {
     position: "absolute",
     top: 0,
-    left: 0,
-    right: 0,
+    left: "-50%",
+    width: "200%",
     height: 2,
+    zIndex: 1,
+  },
+  topHighlight: {
+    width: "100%",
+    height: "100%",
   },
   cardContent: {
     flexDirection: "row",
