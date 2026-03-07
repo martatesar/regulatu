@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
+import { useKeepAwake } from "expo-keep-awake";
 import { colors } from "../theme/colors";
 import { PROTOCOLS, Protocol } from "../engine/protocols";
 import { RootStackParamList } from "../app/navigation";
@@ -30,6 +31,7 @@ type SessionScreenNavigationProp = NativeStackNavigationProp<
 type Phase = "inhale" | "hold-inhale" | "exhale" | "hold-exhale";
 
 export const SessionScreen = () => {
+  useKeepAwake();
   const navigation = useNavigation<SessionScreenNavigationProp>();
   const route = useRoute<SessionScreenRouteProp>();
 
@@ -62,7 +64,8 @@ export const SessionScreen = () => {
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
-      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      if (progressIntervalRef.current)
+        clearInterval(progressIntervalRef.current);
     };
   }, []);
 
@@ -132,7 +135,28 @@ export const SessionScreen = () => {
       setPhase(newPhase);
 
       if (hapticsEnabled) {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        if (newPhase === "inhale") {
+          // 1 tap for Inhale
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        } else if (newPhase === "hold-inhale" || newPhase === "hold-exhale") {
+          // 2 taps for Hold
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          setTimeout(
+            () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
+            200,
+          );
+        } else if (newPhase === "exhale") {
+          // 3 taps for Exhale
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          setTimeout(
+            () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
+            200,
+          );
+          setTimeout(
+            () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
+            400,
+          );
+        }
       }
 
       const ms = duration * 1000;
@@ -141,7 +165,8 @@ export const SessionScreen = () => {
       setPhaseProgress(0);
 
       // Start progress tracking interval
-      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      if (progressIntervalRef.current)
+        clearInterval(progressIntervalRef.current);
       progressIntervalRef.current = setInterval(() => {
         const elapsed = (Date.now() - phaseStartTimeRef.current) / 1000;
         const progress = Math.min(elapsed / phaseDurationRef.current, 1);
@@ -149,7 +174,8 @@ export const SessionScreen = () => {
       }, 50); // Update every 50ms for smooth animation
 
       timerRef.current = setTimeout(() => {
-        if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+        if (progressIntervalRef.current)
+          clearInterval(progressIntervalRef.current);
         setPhaseProgress(1);
         finishPhase(newPhase, duration);
       }, ms);

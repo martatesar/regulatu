@@ -15,7 +15,7 @@ interface SettingsState {
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      hapticsEnabled: false,
+      hapticsEnabled: true,
       lastState: undefined,
 
       setHapticsEnabled: (val) => set({ hapticsEnabled: val }),
