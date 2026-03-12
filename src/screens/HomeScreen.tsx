@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Dimensions, Modal } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Dimensions, Modal, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -23,6 +23,11 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   "Home"
 >;
+
+type InfoModalContent = {
+  title: string;
+  description: string;
+};
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -69,10 +74,14 @@ export const HomeScreen = () => {
   // High refresh rate sensor (60Hz = ~16ms)
   const gravitySensor = useAnimatedSensor(SensorType.GRAVITY, { interval: 16 });
 
-  const [selectedInfo, setSelectedInfo] = useState<Protocol | null>(null);
+  const [selectedInfo, setSelectedInfo] = useState<InfoModalContent | null>(null);
 
   const handleStateSelect = (state: FeltState) => {
     navigation.navigate("Session", { state });
+  };
+
+  const handleCO2BaselineSelect = () => {
+    navigation.navigate("CO2Baseline");
   };
 
   return (
@@ -118,7 +127,12 @@ export const HomeScreen = () => {
                     </View>
                     <TouchableOpacity
                       style={styles.infoButton}
-                      onPress={() => setSelectedInfo(protocol)}
+                      onPress={() =>
+                        setSelectedInfo({
+                          title: protocol.label,
+                          description: protocol.explanation,
+                        })
+                      }
                     >
                       <Feather name="info" size={24} color="#8A8A9E" />
                     </TouchableOpacity>
@@ -127,6 +141,52 @@ export const HomeScreen = () => {
                 </LinearGradient>
               </TouchableOpacity>
             ))}
+          </View>
+
+          <View style={styles.assessmentSection}>
+            <Text style={styles.sectionLabel}>Assessment</Text>
+
+            <TouchableOpacity
+              style={styles.cardWrapper}
+              onPress={handleCO2BaselineSelect}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={["#1B1B2C", "#0D0D18"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={styles.cardGradient}
+              >
+                <AnimatedHighlight sensor={gravitySensor.sensor} />
+
+                <View style={styles.cardContent}>
+                  <View style={styles.assessmentIcon}>
+                    <Feather name="activity" size={22} color="#FFFFFF" />
+                  </View>
+
+                  <View style={styles.textContainer}>
+                    <Text style={styles.label}>CO2 Tolerance Baseline</Text>
+                    <Text style={styles.assessmentDescription}>
+                      Guided post-exhale pause to first breathing impulse
+                    </Text>
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.infoButton}
+                    onPress={() =>
+                      setSelectedInfo({
+                        title: "CO2 Tolerance Baseline",
+                        description:
+                          "Measure your current CO2 tolerance from a guided post-exhale pause. The timer stops at the first natural impulse to breathe.\n\nCO2 tolerance refers to how your breathing system responds as carbon dioxide gradually rises in the blood. Carbon dioxide is not just a waste gas. It is one of the main signals your brain uses to regulate breathing rhythm, breathing urgency, and airway tone. If your system is very sensitive to rising CO2, the impulse to breathe appears earlier and breathing can become faster and more reactive.\n\nOverbreathing means breathing more air than your body needs for the situation. This can lower CO2 too quickly, which may contribute to air hunger, chest tightness, lightheadedness, tingling, dizziness, and a sense that you cannot get a satisfying breath even when oxygen is normal. In some people it can also reinforce a cycle of stress, mouth breathing, and respiratory over-response.\n\nThis baseline is useful for tracking breathing consistency over time and for understanding how reactive your breathing pattern may be under stress, fatigue, or dysregulation. It is a wellness assessment only and is not intended to diagnose lung disease, oxygen levels, or any medical condition.",
+                      })
+                    }
+                  >
+                    <Feather name="info" size={24} color="#8A8A9E" />
+                  </TouchableOpacity>
+                  <Feather name="chevron-right" size={24} color="#555566" />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
 
           <Text style={styles.disclaimer}>
@@ -142,12 +202,9 @@ export const HomeScreen = () => {
         animationType="fade"
         onRequestClose={() => setSelectedInfo(null)}
       >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setSelectedInfo(null)}
-        >
-          <TouchableOpacity activeOpacity={1} style={styles.modalContentWrapper}>
+        <View style={styles.modalOverlay}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setSelectedInfo(null)} />
+          <View style={styles.modalContentWrapper}>
             <LinearGradient
               colors={["#2A2A40", "#141424"]}
               start={{ x: 0, y: 0 }}
@@ -155,21 +212,28 @@ export const HomeScreen = () => {
               style={styles.modalContent}
             >
               <AnimatedHighlight sensor={gravitySensor.sensor} />
-              <View style={styles.modalHeader}>
-                <View style={styles.modalTitleContainer}>
-                  <Feather name="info" size={20} color="#6B6B8A" style={styles.modalTitleIcon} />
-                  <Text style={styles.modalTitle}>{selectedInfo?.label}</Text>
+              <View style={styles.modalInner}>
+                <View style={styles.modalHeader}>
+                  <View style={styles.modalTitleContainer}>
+                    <Feather name="info" size={20} color="#6B6B8A" style={styles.modalTitleIcon} />
+                    <Text style={styles.modalTitle}>{selectedInfo?.title}</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => setSelectedInfo(null)} style={styles.closeButton}>
+                    <Feather name="x" size={24} color="#8A8A9E" />
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity onPress={() => setSelectedInfo(null)} style={styles.closeButton}>
-                  <Feather name="x" size={24} color="#8A8A9E" />
-                </TouchableOpacity>
+                <ScrollView
+                  style={styles.modalScrollView}
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={styles.modalScrollContent}
+                  nestedScrollEnabled
+                >
+                  <Text style={styles.modalDescription}>{selectedInfo?.description}</Text>
+                </ScrollView>
               </View>
-              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalScrollContent}>
-                <Text style={styles.modalDescription}>{selectedInfo?.explanation}</Text>
-              </ScrollView>
             </LinearGradient>
-          </TouchableOpacity>
-        </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
     </LinearGradient>
   );
@@ -215,6 +279,18 @@ const styles = StyleSheet.create({
   listContainer: {
     gap: 12,
   },
+  assessmentSection: {
+    marginTop: 28,
+    gap: 12,
+  },
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 1.1,
+    textTransform: "uppercase",
+    color: "#6B6B8A",
+    paddingHorizontal: 2,
+  },
   cardWrapper: {
     borderRadius: 16,
     overflow: "hidden",
@@ -248,6 +324,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     resizeMode: "cover",
   },
+  assessmentIcon: {
+    width: 48,
+    height: 48,
+    marginRight: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
   textContainer: {
     flex: 1,
     justifyContent: "center",
@@ -257,6 +344,12 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "500",
     letterSpacing: 0.3,
+  },
+  assessmentDescription: {
+    marginTop: 4,
+    fontSize: 13,
+    color: "#8A8A9E",
+    lineHeight: 18,
   },
   disclaimer: {
     marginTop: 32,
@@ -276,6 +369,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
   },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
   modalContentWrapper: {
     width: "100%",
     maxHeight: "80%",
@@ -291,6 +387,8 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: "100%",
+  },
+  modalInner: {
     padding: 24,
   },
   modalHeader: {
@@ -300,8 +398,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalTitleContainer: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
+    marginRight: 12,
   },
   modalTitleIcon: {
     marginRight: 8,
@@ -317,8 +417,11 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.05)",
     borderRadius: 20,
   },
+  modalScrollView: {
+    maxHeight: "100%",
+  },
   modalScrollContent: {
-    paddingBottom: 8,
+    paddingBottom: 16,
   },
   modalDescription: {
     fontSize: 16,

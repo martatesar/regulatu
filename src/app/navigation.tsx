@@ -6,12 +6,14 @@ import { HomeScreen } from "../screens/HomeScreen";
 import { SessionScreen } from "../screens/SessionScreen";
 import { SessionEndScreen } from "../screens/SessionEndScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
+import { CO2BaselineScreen } from "../screens/CO2BaselineScreen";
 import { FeltState } from "../engine/protocols";
 
 export type RootStackParamList = {
   Home: undefined;
   Session: { state: FeltState; durationSec?: number };
   SessionEnd: { state: FeltState; durationSec: number };
+  CO2Baseline: undefined;
   Settings: undefined;
 };
 
@@ -31,6 +33,7 @@ export const AppNavigation = () => {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Session" component={SessionScreen} />
         <Stack.Screen name="SessionEnd" component={SessionEndScreen} />
+        <Stack.Screen name="CO2Baseline" component={CO2BaselineScreen} />
         <Stack.Screen
           name="Settings"
           component={SettingsScreen}
