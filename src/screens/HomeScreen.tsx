@@ -16,8 +16,14 @@ import Animated, {
 
 import { colors } from "../theme/colors";
 import { typography } from "../theme/typography";
-import { PROTOCOLS, FeltState, Protocol } from "../engine/protocols";
+import { PROTOCOLS, FeltState } from "../engine/protocols";
 import { RootStackParamList } from "../app/navigation";
+import {
+  CreateProtocolCard,
+  CustomProtocolCard,
+} from "../components/CustomProtocolCard";
+import { sortCustomProtocols } from "../features/customProtocols/model";
+import { useSettingsStore } from "../store/settingsStore";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -70,6 +76,8 @@ const AnimatedHighlight = ({ sensor }: { sensor: any }) => {
 
 export const HomeScreen = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  const storedCustomProtocols = useSettingsStore((state) => state.customProtocols);
+  const customProtocols = sortCustomProtocols(storedCustomProtocols);
   
   // High refresh rate sensor (60Hz = ~16ms)
   const gravitySensor = useAnimatedSensor(SensorType.GRAVITY, { interval: 16 });
@@ -77,7 +85,7 @@ export const HomeScreen = () => {
   const [selectedInfo, setSelectedInfo] = useState<InfoModalContent | null>(null);
 
   const handleStateSelect = (state: FeltState) => {
-    navigation.navigate("Session", { state });
+    navigation.navigate("Session", { source: "preset", state });
   };
 
   const handleCO2BaselineSelect = () => {
@@ -86,6 +94,18 @@ export const HomeScreen = () => {
 
   const handleVitalsSelect = () => {
     navigation.navigate("Vitals");
+  };
+
+  const handleCreateCustomProtocol = () => {
+    navigation.navigate("CustomProtocolEditor");
+  };
+
+  const handleEditCustomProtocol = (protocolId: string) => {
+    navigation.navigate("CustomProtocolEditor", { protocolId });
+  };
+
+  const handleStartCustomProtocol = (protocolId: string) => {
+    navigation.navigate("Session", { source: "custom", protocolId });
   };
 
   return (
@@ -145,6 +165,43 @@ export const HomeScreen = () => {
                 </LinearGradient>
               </TouchableOpacity>
             ))}
+          </View>
+
+          <View style={styles.customSection}>
+            <View style={styles.customSectionHeader}>
+              <View>
+                <Text style={styles.sectionLabel}>Your protocols</Text>
+                <Text style={styles.customSectionBody}>
+                  Save your own breathing rhythms and restart them in one tap.
+                </Text>
+              </View>
+
+              {customProtocols.length > 0 ? (
+                <TouchableOpacity
+                  onPress={handleCreateCustomProtocol}
+                  style={styles.createMiniButton}
+                >
+                  <Feather name="plus" size={16} color="#F9E7FF" />
+                </TouchableOpacity>
+              ) : null}
+            </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.customRail}
+            >
+              <CreateProtocolCard onPress={handleCreateCustomProtocol} />
+
+              {customProtocols.map((protocol) => (
+                <CustomProtocolCard
+                  key={protocol.id}
+                  protocol={protocol}
+                  onPress={() => handleStartCustomProtocol(protocol.id)}
+                  onEdit={() => handleEditCustomProtocol(protocol.id)}
+                />
+              ))}
+            </ScrollView>
           </View>
 
           <View style={styles.assessmentSection}>
@@ -328,6 +385,38 @@ const styles = StyleSheet.create({
   assessmentSection: {
     marginTop: 28,
     gap: 12,
+  },
+  customSection: {
+    marginTop: 30,
+    gap: 14,
+  },
+  customSectionHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  customSectionBody: {
+    marginTop: 6,
+    color: "#8A8A9E",
+    fontSize: 14,
+    lineHeight: 20,
+    maxWidth: 280,
+  },
+  customRail: {
+    gap: 14,
+    paddingRight: 20,
+    paddingBottom: 4,
+  },
+  createMiniButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(249,231,255,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(249,231,255,0.14)",
   },
   sectionLabel: {
     fontSize: 12,

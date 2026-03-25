@@ -9,6 +9,8 @@ import { colors } from "../theme/colors";
 import { typography } from "../theme/typography";
 import { RootStackParamList } from "../app/navigation";
 import { HrvSummaryCard } from "../components/HrvSummaryCard";
+import { getCustomProtocolDisplayName } from "../features/customProtocols/model";
+import { useSettingsStore } from "../store/settingsStore";
 
 type SessionEndScreenRouteProp = RouteProp<RootStackParamList, "SessionEnd">;
 type SessionEndScreenNavigationProp = NativeStackNavigationProp<
@@ -19,11 +21,32 @@ type SessionEndScreenNavigationProp = NativeStackNavigationProp<
 export const SessionEndScreen = () => {
   const navigation = useNavigation<SessionEndScreenNavigationProp>();
   const route = useRoute<SessionEndScreenRouteProp>();
-  const { state, durationSec, hrvSummary } = route.params;
+  const customProtocols = useSettingsStore((state) => state.customProtocols);
+  let customProtocolName: string | undefined;
+
+  if (route.params.source === "custom") {
+    const { protocolId } = route.params;
+    customProtocolName = getCustomProtocolDisplayName(
+      customProtocols.find(
+        (protocol) => protocol.id === protocolId,
+      ),
+    );
+  }
 
   const handleContinue = () => {
-    // Resume same protocol with same duration
-    navigation.replace("Session", { state, durationSec });
+    if (route.params.source === "custom") {
+      navigation.replace("Session", {
+        source: "custom",
+        protocolId: route.params.protocolId,
+      });
+      return;
+    }
+
+    navigation.replace("Session", {
+      source: "preset",
+      state: route.params.state,
+      durationSec: route.params.durationSec,
+    });
   };
 
   const handleStop = () => {
@@ -36,8 +59,12 @@ export const SessionEndScreen = () => {
         <View style={styles.content}>
           <Text style={[typography.h1, styles.title]}>Session complete</Text>
 
-          {hrvSummary?.sufficientSignal ? (
-            <HrvSummaryCard summary={hrvSummary} />
+          {customProtocolName ? (
+            <Text style={styles.subtitle}>{customProtocolName}</Text>
+          ) : null}
+
+          {route.params.hrvSummary?.sufficientSignal ? (
+            <HrvSummaryCard summary={route.params.hrvSummary} />
           ) : null}
 
           <TouchableOpacity style={styles.buttonPrimary} onPress={handleContinue}>
@@ -71,7 +98,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   title: {
-    marginBottom: 60,
+    marginBottom: 12,
+  },
+  subtitle: {
+    marginBottom: 48,
+    color: "#9FB4C4",
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: "600",
   },
   buttonPrimary: {
     backgroundColor: "#333",

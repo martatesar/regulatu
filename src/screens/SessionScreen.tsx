@@ -22,11 +22,13 @@ import { BreathingCircle } from "../components/BreathingCircle";
 import { HrvLiveCard } from "../components/HrvLiveCard";
 import { applyAdjustment } from "../engine/sessionEngine";
 import { PROTOCOLS } from "../engine/protocols";
-import { buildSessionHrvSummary } from "../features/hrv/sessionSummary";
 import {
-  HrvStatusEvent,
-  SessionHrvSample,
-} from "../features/hrv/types";
+  formatTargetLabel,
+  getCustomProtocolDisplayName,
+  SessionTarget,
+} from "../features/customProtocols/model";
+import { buildSessionHrvSummary } from "../features/hrv/sessionSummary";
+import { HrvStatusEvent, SessionHrvSample } from "../features/hrv/types";
 import {
   addHrvStatusListener,
   getHrvPermissionStatus,
@@ -46,6 +48,18 @@ type SessionScreenNavigationProp = NativeStackNavigationProp<
 
 type Phase = "inhale" | "hold-inhale" | "exhale" | "hold-exhale";
 
+type SessionProtocol = {
+  label: string;
+  inhaleSec: number;
+  holdAfterInhaleSec: number;
+  exhaleSec: number;
+  holdAfterExhaleSec: number;
+  microVariation?: {
+    enabled: boolean;
+    deltaSec: number;
+  };
+};
+
 const emptyHrvStatus: HrvStatusEvent = {
   state: "off",
   signalQuality: "low",
@@ -58,13 +72,51 @@ export const SessionScreen = () => {
   useKeepAwake();
   const navigation = useNavigation<SessionScreenNavigationProp>();
   const route = useRoute<SessionScreenRouteProp>();
-  const { state: feltState, durationSec: paramDuration } = route.params;
+  const sessionParams = route.params;
 
-  const protocol = PROTOCOLS[feltState];
-  const {
-    hapticsEnabled,
-    hrvMeasurementEnabledByDefault,
-  } = useSettingsStore();
+  const customProtocols = useSettingsStore((state) => state.customProtocols);
+  const markCustomProtocolUsed = useSettingsStore(
+    (state) => state.markCustomProtocolUsed,
+  );
+  const hapticsEnabled = useSettingsStore((state) => state.hapticsEnabled);
+  const hrvMeasurementEnabledByDefault = useSettingsStore(
+    (state) => state.hrvMeasurementEnabledByDefault,
+  );
+
+  const isCustomSession = sessionParams.source === "custom";
+  const presetProtocol =
+    sessionParams.source === "preset" ? PROTOCOLS[sessionParams.state] : undefined;
+  const customProtocol =
+    sessionParams.source === "custom"
+      ? customProtocols.find((protocol) => protocol.id === sessionParams.protocolId)
+      : undefined;
+  const customProtocolId =
+    sessionParams.source === "custom" ? sessionParams.protocolId : undefined;
+
+  const sessionProtocol: SessionProtocol = isCustomSession
+    ? {
+        label: getCustomProtocolDisplayName(customProtocol),
+        inhaleSec: customProtocol?.inhaleSec ?? 4,
+        holdAfterInhaleSec: customProtocol?.holdAfterInhaleSec ?? 0,
+        exhaleSec: customProtocol?.exhaleSec ?? 6,
+        holdAfterExhaleSec: customProtocol?.holdAfterExhaleSec ?? 0,
+      }
+    : {
+        label: presetProtocol!.label,
+        inhaleSec: presetProtocol!.inhaleSec,
+        holdAfterInhaleSec: presetProtocol!.holdAfterInhaleSec || 0,
+        exhaleSec: presetProtocol!.exhaleSec,
+        holdAfterExhaleSec: presetProtocol!.holdAfterExhaleSec || 0,
+        microVariation: presetProtocol!.microVariation,
+      };
+
+  const sessionTarget: SessionTarget = isCustomSession
+    ? customProtocol?.target || { mode: "time", durationSec: 180 }
+    : {
+        mode: "time",
+        durationSec:
+          sessionParams.durationSec || presetProtocol!.defaultDurationSec,
+      };
 
   const [phase, setPhase] = useState<Phase>("inhale");
   const [isActive, setIsActive] = useState(true);
@@ -75,10 +127,10 @@ export const SessionScreen = () => {
   const [hrvFeatureAvailable, setHrvFeatureAvailable] = useState(false);
   const [hrvEnabled, setHrvEnabled] = useState(false);
 
-  const currentInhaleRef = useRef(protocol.inhaleSec);
-  const currentExhaleRef = useRef(protocol.exhaleSec);
-  const currentHoldInhaleRef = useRef(protocol.holdAfterInhaleSec || 0);
-  const currentHoldExhaleRef = useRef(protocol.holdAfterExhaleSec || 0);
+  const currentInhaleRef = useRef(sessionProtocol.inhaleSec);
+  const currentExhaleRef = useRef(sessionProtocol.exhaleSec);
+  const currentHoldInhaleRef = useRef(sessionProtocol.holdAfterInhaleSec);
+  const currentHoldExhaleRef = useRef(sessionProtocol.holdAfterExhaleSec);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
     null,
@@ -87,12 +139,13 @@ export const SessionScreen = () => {
   const phaseStartTimeRef = useRef(0);
   const phaseDurationRef = useRef(0);
   const elapsedTotalRef = useRef(0);
-  const durationTotalRef = useRef(paramDuration || protocol.defaultDurationSec);
   const checkpointShownRef = useRef(false);
   const nextExhaleVariationRef = useRef<number | null>(null);
   const phaseRef = useRef<Phase>("inhale");
   const isActiveRef = useRef(true);
   const hrvSamplesRef = useRef<SessionHrvSample[]>([]);
+  const sessionTargetRef = useRef(sessionTarget);
+  const completedRoundsRef = useRef(0);
 
   const resetHrvState = useCallback(() => {
     setHrvEnabled(false);
@@ -132,6 +185,29 @@ export const SessionScreen = () => {
     },
     [resetHrvState],
   );
+
+  const finishSession = useCallback(() => {
+    const hrvSummary = buildSessionHrvSummary(hrvSamplesRef.current);
+    void stopHrvFlow();
+
+    if (sessionParams.source === "custom") {
+      navigation.replace("SessionEnd", {
+        source: "custom",
+        protocolId: sessionParams.protocolId,
+        hrvSummary,
+      });
+      return;
+    }
+
+    navigation.replace("SessionEnd", {
+      source: "preset",
+      state: sessionParams.state,
+      durationSec: sessionTargetRef.current.mode === "time"
+        ? sessionTargetRef.current.durationSec
+        : Math.round(elapsedTotalRef.current),
+      hrvSummary,
+    });
+  }, [navigation, sessionParams, stopHrvFlow]);
 
   const markHrvUnavailable = useCallback((state: "unavailable" | "error") => {
     setHrvEnabled(false);
@@ -210,10 +286,11 @@ export const SessionScreen = () => {
       switch (nextPhase) {
         case "inhale":
           duration = currentInhaleRef.current;
-          if (protocol.microVariation?.enabled) {
-            const delta = protocol.microVariation.deltaSec;
+          if (sessionProtocol.microVariation?.enabled) {
+            const delta = sessionProtocol.microVariation.deltaSec;
             const random = Math.random();
-            const variation = random < 0.33 ? -delta : random < 0.66 ? 0 : delta;
+            const variation =
+              random < 0.33 ? -delta : random < 0.66 ? 0 : delta;
             duration += variation;
             nextExhaleVariationRef.current = -variation;
           } else {
@@ -287,7 +364,7 @@ export const SessionScreen = () => {
         finishPhaseRef.current(nextPhase, duration);
       }, durationMs);
     },
-    [hapticsEnabled, protocol.microVariation],
+    [hapticsEnabled, sessionProtocol.microVariation],
   );
 
   const getNextPhase = (current: Phase): Phase => {
@@ -312,14 +389,23 @@ export const SessionScreen = () => {
   finishPhaseRef.current = (currentPhase: Phase, durationUsed: number) => {
     elapsedTotalRef.current += durationUsed;
 
-    if (elapsedTotalRef.current >= durationTotalRef.current) {
-      const hrvSummary = buildSessionHrvSummary(hrvSamplesRef.current);
-      void stopHrvFlow();
-      navigation.replace("SessionEnd", {
-        state: feltState,
-        durationSec: durationTotalRef.current,
-        hrvSummary,
-      });
+    const completedRound =
+      currentPhase === "hold-exhale" ||
+      (currentPhase === "exhale" && currentHoldExhaleRef.current <= 0.05);
+
+    if (completedRound) {
+      completedRoundsRef.current += 1;
+    }
+
+    const reachedTimeTarget =
+      sessionTargetRef.current.mode === "time" &&
+      elapsedTotalRef.current >= sessionTargetRef.current.durationSec;
+    const reachedRoundsTarget =
+      sessionTargetRef.current.mode === "rounds" &&
+      completedRoundsRef.current >= sessionTargetRef.current.rounds;
+
+    if (reachedTimeTarget || reachedRoundsTarget) {
+      finishSession();
       return;
     }
 
@@ -334,6 +420,18 @@ export const SessionScreen = () => {
 
     runPhase(getNextPhase(currentPhase));
   };
+
+  useEffect(() => {
+    if (sessionParams.source === "custom" && !customProtocol) {
+      navigation.popToTop();
+    }
+  }, [customProtocol, navigation, sessionParams.source]);
+
+  useEffect(() => {
+    if (customProtocolId && customProtocol) {
+      markCustomProtocolUsed(customProtocolId);
+    }
+  }, [customProtocolId, !!customProtocol, markCustomProtocolUsed]);
 
   useEffect(() => {
     const subscription = addHrvStatusListener((event) => {
@@ -457,9 +555,14 @@ export const SessionScreen = () => {
   };
 
   const handleDurationChange = (newDuration: number) => {
+    if (sessionParams.source !== "preset") {
+      return;
+    }
+
     void stopHrvFlow({ resetSamples: true });
     navigation.replace("Session", {
-      state: feltState,
+      source: "preset",
+      state: sessionParams.state,
       durationSec: newDuration,
     });
   };
@@ -521,6 +624,17 @@ export const SessionScreen = () => {
       hrvStatus.state === "unavailable" ||
       hrvStatus.state === "error");
 
+  const currentPhaseDuration =
+    phase === "inhale"
+      ? currentInhaleRef.current
+      : phase === "exhale"
+        ? currentExhaleRef.current
+        : phase === "hold-inhale"
+          ? currentHoldInhaleRef.current
+          : currentHoldExhaleRef.current;
+
+  const customTargetLabel = isCustomSession ? formatTargetLabel(sessionTarget) : null;
+
   return (
     <LinearGradient colors={["#12101F", "#030303"]} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -529,31 +643,42 @@ export const SessionScreen = () => {
             <Feather name="x" size={24} color="#8A8A9E" />
           </TouchableOpacity>
 
-          <View style={styles.durationContainer}>
-            {protocol.durationOptionsSec.map((durationOption) => (
-              <TouchableOpacity
-                key={durationOption}
-                onPress={() => handleDurationChange(durationOption)}
-                style={[
-                  styles.durationPill,
-                  durationOption === durationTotalRef.current &&
-                    styles.durationPillActive,
-                ]}
-              >
-                <Text
+          {sessionParams.source === "preset" ? (
+            <View style={styles.durationContainer}>
+              {presetProtocol!.durationOptionsSec.map((durationOption) => (
+                <TouchableOpacity
+                  key={durationOption}
+                  onPress={() => handleDurationChange(durationOption)}
                   style={[
-                    styles.durationText,
-                    durationOption === durationTotalRef.current &&
-                      styles.durationTextActive,
+                    styles.durationPill,
+                    sessionTarget.mode === "time" &&
+                      durationOption === sessionTarget.durationSec &&
+                      styles.durationPillActive,
                   ]}
                 >
-                  {durationOption >= 60 && durationOption % 60 === 0
-                    ? `${durationOption / 60}m`
-                    : `${durationOption}s`}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+                  <Text
+                    style={[
+                      styles.durationText,
+                      sessionTarget.mode === "time" &&
+                        durationOption === sessionTarget.durationSec &&
+                        styles.durationTextActive,
+                    ]}
+                  >
+                    {durationOption >= 60 && durationOption % 60 === 0
+                      ? `${durationOption / 60}m`
+                      : `${durationOption}s`}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ) : (
+            <View style={styles.customHeaderCard}>
+              <Text numberOfLines={1} style={styles.customHeaderTitle}>
+                {sessionProtocol.label}
+              </Text>
+              <Text style={styles.customHeaderSubtitle}>{customTargetLabel}</Text>
+            </View>
+          )}
 
           {showHrvButton ? (
             <TouchableOpacity
@@ -571,15 +696,7 @@ export const SessionScreen = () => {
         <View style={styles.center}>
           <BreathingCircle
             phase={phase}
-            durationSec={
-              phase === "inhale"
-                ? currentInhaleRef.current
-                : phase === "exhale"
-                  ? currentExhaleRef.current
-                  : phase === "hold-inhale"
-                    ? currentHoldInhaleRef.current
-                    : currentHoldExhaleRef.current
-            }
+            durationSec={currentPhaseDuration}
             isActive={isActive}
             nextPhase={getNextVisiblePhase(phase)}
             progress={phaseProgress}
@@ -645,6 +762,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: "center",
     zIndex: 10,
+    gap: 12,
   },
   iconButton: {
     padding: 8,
@@ -677,6 +795,32 @@ const styles = StyleSheet.create({
   },
   durationTextActive: {
     color: "#FFFFFF",
+  },
+  customHeaderCard: {
+    flex: 1,
+    minHeight: 52,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: "rgba(143,210,201,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(143,210,201,0.2)",
+  },
+  customHeaderTitle: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    lineHeight: 18,
+    fontWeight: "700",
+  },
+  customHeaderSubtitle: {
+    marginTop: 4,
+    color: "#B4DBD7",
+    fontSize: 13,
+    lineHeight: 16,
+    fontWeight: "600",
+    fontVariant: ["tabular-nums"],
   },
   headerSpacer: {
     width: 48,
