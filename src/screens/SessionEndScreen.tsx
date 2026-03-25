@@ -8,6 +8,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "../theme/colors";
 import { typography } from "../theme/typography";
 import { RootStackParamList } from "../app/navigation";
+import { HrvSummaryCard } from "../components/HrvSummaryCard";
 
 type SessionEndScreenRouteProp = RouteProp<RootStackParamList, "SessionEnd">;
 type SessionEndScreenNavigationProp = NativeStackNavigationProp<
@@ -18,7 +19,7 @@ type SessionEndScreenNavigationProp = NativeStackNavigationProp<
 export const SessionEndScreen = () => {
   const navigation = useNavigation<SessionEndScreenNavigationProp>();
   const route = useRoute<SessionEndScreenRouteProp>();
-  const { state, durationSec } = route.params;
+  const { state, durationSec, hrvSummary } = route.params;
 
   const handleContinue = () => {
     // Resume same protocol with same duration
@@ -34,6 +35,10 @@ export const SessionEndScreen = () => {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.content}>
           <Text style={[typography.h1, styles.title]}>Session complete</Text>
+
+          {hrvSummary?.sufficientSignal ? (
+            <HrvSummaryCard summary={hrvSummary} />
+          ) : null}
 
           <TouchableOpacity style={styles.buttonPrimary} onPress={handleContinue}>
             <Text style={typography.buttonLarge}>Continue</Text>

@@ -2,7 +2,7 @@
   "expo": {
     "name": "REZET",
     "slug": "rezet-app",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -12,6 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
+    "plugins": [
+      "./modules/rezet-camera-hrv/plugin"
+    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.martatesar.rezetapp",

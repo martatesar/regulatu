@@ -1,0 +1,18 @@
+{
+  "name": "rezet-camera-hrv",
+  "version": "1.0.0",
+  "description": "Production-grade iOS camera HRV capture module for REZET.",
+  "main": "plugin.js",
+  "keywords": [
+    "expo",
+    "ios",
+    "camera",
+    "hrv"
+  ],
+  "license": "UNLICENSED",
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*"
+  }
+}
+

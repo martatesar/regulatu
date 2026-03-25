@@ -26,6 +26,15 @@ When you experience acute stress, panic, or overwhelm, your biology is stuck in 
 
 No spiritual fluff. Just clinical mechanics. Select your current somatic state, and follow the visual and haptic pacing.
 
+NEW: MEASURE VITALS
+Use the rear camera and flash for a dedicated 1-minute fingertip reading. A live camera preview helps you place your finger correctly, the measurement starts automatically once pulse lock is stable, and REZET processes the full capture window to estimate:
+
+• HRV
+• Heart rate
+• Breathing rate
+
+Breathing rate is inferred from cyclical heart rate changes during the measurement. Vitals are provided for wellness trends and self-awareness only, not diagnosis or medical monitoring.
+
 THE PROTOCOLS:
 We map your acute symptoms to precise respiratory ratios designed to counteract them via heart rate variability (HRV) and vagal tone manipulation.
 
@@ -38,6 +47,7 @@ We map your acute symptoms to precise respiratory ratios designed to counteract 
 
 SYSTEM FEATURES:
 • Zero Friction: No long intro videos, no mandatory sign-ups. Immediate access to physiological regulation in two taps.
+• Measure Vitals: A guided 1-minute camera reading for HRV, heart rate, and breathing rate estimates using the rear camera and flash.
 • Clinical Insights: Detailed neurological and biological mechanics explaining why each protocol is effective.
 • Haptic & Visual Pacing: A high-contrast adaptive interface combined with precise haptic feedback—allowing for screen-free, eyes-closed regulation.
 • Adaptive Intensity Checkpoints: If a respiratory ratio exceeds your current CO2 tolerance, the algorithm safely down-scales the timing mid-session.

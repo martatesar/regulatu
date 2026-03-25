@@ -84,6 +84,10 @@ export const HomeScreen = () => {
     navigation.navigate("CO2Baseline");
   };
 
+  const handleVitalsSelect = () => {
+    navigation.navigate("Vitals");
+  };
+
   return (
     <LinearGradient colors={["#12101F", "#030303"]} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -178,6 +182,48 @@ export const HomeScreen = () => {
                         title: "CO2 Tolerance Baseline",
                         description:
                           "Measure your current CO2 tolerance from a guided post-exhale pause. The timer stops at the first natural impulse to breathe.\n\nCO2 tolerance refers to how your breathing system responds as carbon dioxide gradually rises in the blood. Carbon dioxide is not just a waste gas. It is one of the main signals your brain uses to regulate breathing rhythm, breathing urgency, and airway tone. If your system is very sensitive to rising CO2, the impulse to breathe appears earlier and breathing can become faster and more reactive.\n\nOverbreathing means breathing more air than your body needs for the situation. This can lower CO2 too quickly, which may contribute to air hunger, chest tightness, lightheadedness, tingling, dizziness, and a sense that you cannot get a satisfying breath even when oxygen is normal. In some people it can also reinforce a cycle of stress, mouth breathing, and respiratory over-response.\n\nThis baseline is useful for tracking breathing consistency over time and for understanding how reactive your breathing pattern may be under stress, fatigue, or dysregulation. It is a wellness assessment only and is not intended to diagnose lung disease, oxygen levels, or any medical condition.",
+                      })
+                    }
+                  >
+                    <Feather name="info" size={24} color="#8A8A9E" />
+                  </TouchableOpacity>
+                  <Feather name="chevron-right" size={24} color="#555566" />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.cardWrapper}
+              onPress={handleVitalsSelect}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={["#11202B", "#0B1118"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={styles.cardGradient}
+              >
+                <AnimatedHighlight sensor={gravitySensor.sensor} />
+
+                <View style={styles.cardContent}>
+                  <View style={styles.vitalsIcon}>
+                    <Feather name="heart" size={20} color="#FFFFFF" />
+                  </View>
+
+                  <View style={styles.textContainer}>
+                    <Text style={styles.label}>Measure vitals</Text>
+                    <Text style={styles.assessmentDescription}>
+                      1-minute camera reading for HRV, pulse, and breathing estimate
+                    </Text>
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.infoButton}
+                    onPress={() =>
+                      setSelectedInfo({
+                        title: "Measure vitals",
+                        description:
+                          "Use the rear camera and flash for a dedicated 1-minute fingertip reading. The screen shows the live camera view so you can verify lens coverage, then processes the captured window to estimate HRV, heart rate, and breathing rate.\n\nThis is a wellness measurement only and not a medical device or diagnosis.",
                       })
                     }
                   >
@@ -334,6 +380,17 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.08)",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.08)",
+  },
+  vitalsIcon: {
+    width: 48,
+    height: 48,
+    marginRight: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(143,210,201,0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(143,210,201,0.28)",
   },
   textContainer: {
     flex: 1,
