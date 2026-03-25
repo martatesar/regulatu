@@ -17,6 +17,13 @@ anxiety,panic,somatic,autonomic,vagus,nerve,hrv,respiratory,physiology,regulate,
 ## Promotional Text (Max 170 characters)
 Physiologically down-regulate your nervous system in 60 seconds. Use clinical respiratory pacing to shift from fight-or-flight back to autonomic homeostasis.
 
+## What's New (Version 1.0.3)
+- Create and save your own custom breathing protocols
+- Set inhale, exhale, and optional hold timings
+- Choose session targets by time or by rounds
+- Start saved custom protocols from Home in one tap
+- Stability fixes and session flow polish
+
 ## Full Description (Max 4000 characters)
 What feels strongest right now? Is your heart racing? Is your chest tight? Are your thoughts looping?
 
@@ -35,6 +42,9 @@ Use the rear camera and flash for a dedicated 1-minute fingertip reading. A live
 
 Breathing rate is inferred from cyclical heart rate changes during the measurement. Vitals are provided for wellness trends and self-awareness only, not diagnosis or medical monitoring.
 
+NEW: CUSTOM BREATHING PROTOCOLS
+Create and save your own breathing protocols with custom inhale, exhale, and optional hold timings. You can choose whether a session ends by total time or by completed rounds, then restart saved custom protocols in one tap from Home.
+
 THE PROTOCOLS:
 We map your acute symptoms to precise respiratory ratios designed to counteract them via heart rate variability (HRV) and vagal tone manipulation.
 
@@ -48,6 +58,7 @@ We map your acute symptoms to precise respiratory ratios designed to counteract 
 SYSTEM FEATURES:
 • Zero Friction: No long intro videos, no mandatory sign-ups. Immediate access to physiological regulation in two taps.
 • Measure Vitals: A guided 1-minute camera reading for HRV, heart rate, and breathing rate estimates using the rear camera and flash.
+• Custom Protocols: Create, save, and restart your own breathing sessions with custom timings and time-based or round-based targets.
 • Clinical Insights: Detailed neurological and biological mechanics explaining why each protocol is effective.
 • Haptic & Visual Pacing: A high-contrast adaptive interface combined with precise haptic feedback—allowing for screen-free, eyes-closed regulation.
 • Adaptive Intensity Checkpoints: If a respiratory ratio exceeds your current CO2 tolerance, the algorithm safely down-scales the timing mid-session.
